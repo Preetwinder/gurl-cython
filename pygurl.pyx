@@ -101,10 +101,10 @@ cdef class URL:
                         schemeComp.len = len(scheme)
                         schemeComp.begin = 0
                         replacement.SetScheme(scheme, schemeComp)
-                if username:
-                        usernameComp.len = len(username)
-                        usernameComp.begin =  
-                        replacement.SetUsername(username, usernameComp)
+                #if username:
+                #        usernameComp.len = len(username)
+                #        usernameComp.begin =  
+                #        replacement.SetUsername(username, usernameComp)
 
                 return URL((self._thisptr.ReplaceComponents(replacement)).spec())
 
