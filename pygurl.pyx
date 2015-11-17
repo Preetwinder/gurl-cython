@@ -23,8 +23,8 @@ cdef class URL:
     cpdef bint IsStandard(self):
         return self._thisptr.IsStandard()
 
-    cpdef URL Resolve(self, url):
-        return URL((self._thisptr.Resolve(url)).spec())
+    cpdef string Resolve(self, url):
+        return (self._thisptr.Resolve(url)).spec()
 
     cpdef string spec(self):
         return self._thisptr.spec()
