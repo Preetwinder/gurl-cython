@@ -16,7 +16,7 @@ setup(ext_modules=cythonize(Extension(
              "url/url_canon_relative.cc", "url/url_canon_stdstring.cc",
              "url/url_canon_stdurl.cc", "url/url_constants.cc",
              "url/url_parse_file.cc", "url/url_util.cc",
-             "url/third_party/mozilla/url_parse.cc"],
+             "url/third_party/mozilla/url_parse.cc", "ComponentStringA.cc"],
     language="c++",
     extra_compile_args=["-std=gnu++0x", "-I./",
                         "-fPIC", "-Ofast", "-pthread", "-w"],
