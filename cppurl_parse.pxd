@@ -13,3 +13,6 @@ cdef extern from "url/third_party/mozilla/url_parse.h" namespace "url":
         Component path
         Component query
         Component ref
+
+    cdef void ParseStandardURL(const char* url, int url_len, 
+                               Parsed* parsed)

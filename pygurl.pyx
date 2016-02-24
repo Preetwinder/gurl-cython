@@ -1,7 +1,30 @@
 from libcpp.string cimport string
 from cppgurl cimport GURL
-from cppurl_parse cimport Component, Parsed
+from cppcomponent_string cimport ComponentStringA
+from cppurl_parse cimport Component, Parsed, ParseStandardURL
 from cppurl_canon cimport Replacements
+from collections import namedtuple
+
+
+result = namedtuple('result', ['scheme', 'username',                                'password', 'host', 'port', 'path', 'query', 'ref'])
+
+
+cdef Parsed cppParseStandard(char *url, int url_len):
+    cdef Parsed parsed
+    ParseStandardURL(url, url_len, &parsed)
+    return parsed
+
+
+def ParseStandard(url):
+    p = cppParseStandard(url, len(url))
+    return result(ComponentStringA(p.scheme, url), 
+                  ComponentStringA(p.username, url),
+                  ComponentStringA(p.password, url), 
+                  ComponentStringA(p.host, url),
+                  ComponentStringA(p.port, url), 
+                  ComponentStringA(p.path, url),
+                  ComponentStringA(p.query, url), 
+                  ComponentStringA(p.ref, url))
 
 
 cdef class URL:
@@ -54,7 +77,7 @@ cdef class URL:
         return self._thisptr.has_host()
 
     cpdef string host(self):
-        return self._thisptr_host()
+        return self._thisptr.host()
 
     cpdef bint has_port(self):
         return self._thisptr.has_port()
@@ -79,11 +102,16 @@ cdef class URL:
 
     cpdef string ref(self):
         return self._thisptr.ref()
+    
+    def getAll(self):
+        return result(self.scheme(), self.username(), self.password(), 
+                      self.host(), self.port(), self.path(), self.query(), 
+                      self.ref())
 
     cdef Parsed getParsed(self):
         return self._thisptr.parsed_for_possibly_invalid_spec()
 
-    '''
+    '''Work in progress
         cpdef ReplaceComponents(self, scheme = None, username = None):
                 cdef Replacements[char] replacement
                 cdef Parsed p = self.getParsed()
