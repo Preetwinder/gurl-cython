@@ -6,7 +6,8 @@ from cppurl_canon cimport Replacements
 from collections import namedtuple
 
 
-result = namedtuple('result', ['scheme', 'username',                                'password', 'host', 'port', 'path', 'query', 'ref'])
+result = namedtuple('result', ['scheme', 'username', 
+                    'password', 'host', 'port', 'path', 'query', 'ref'])
 
 
 cdef Parsed cppParseStandard(char *url, int url_len):
