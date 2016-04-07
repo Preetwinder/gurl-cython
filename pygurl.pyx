@@ -1,38 +1,59 @@
 from libcpp.string cimport string
-from cppgurl cimport GURL
+from cppgurl cimport GURL, BatchedParse
 from cppcomponent_string cimport ComponentStringA
 from cppurl_parse cimport Component, Parsed, ParseStandardURL
 from cppurl_canon cimport Replacements
 from collections import namedtuple
+from cpython.string cimport PyString_AsString
+from libc.stdlib cimport malloc, free
 
 
-result = namedtuple('result', ['scheme', 'username', 
-                    'password', 'host', 'port', 'path', 'query', 'ref'])
+result = namedtuple('result', ['scheme', 'username',
+                               'password', 'host', 'port', 'path', 'query', 'ref'])
+
+
+cdef char ** to_cstring_array(list_str):
+    cdef char **ret = <char **>malloc(len(list_str) * sizeof(char *))
+    for i in xrange(len(list_str)):
+        ret[i] = PyString_AsString(list_str[i])
+    return ret
+
+
+def Batched(urls):
+    url_len = len(urls)
+    res = BatchedParse(to_cstring_array(urls), url_len)
+    answer = []
+    for i in xrange(url_len):
+        x = res[i]
+        answer.append(result(x.scheme(), x.username(), 
+                             x.password(), x.host(), x.port(),
+                             x.path(), x.query(), x.ref()))
+    return answer
 
 
 cdef Parsed cppParseStandard(char *url, int url_len):
-    cdef Parsed parsed
-    ParseStandardURL(url, url_len, &parsed)
-    return parsed
+        cdef Parsed parsed
+        ParseStandardURL(url, url_len, &parsed)
+        return parsed
 
 
 def ParseStandard(url):
-    p = cppParseStandard(url, len(url))
-    return result(ComponentStringA(p.scheme, url), 
-                  ComponentStringA(p.username, url),
-                  ComponentStringA(p.password, url), 
-                  ComponentStringA(p.host, url),
-                  ComponentStringA(p.port, url), 
-                  ComponentStringA(p.path, url),
-                  ComponentStringA(p.query, url), 
-                  ComponentStringA(p.ref, url))
+        p = cppParseStandard(url, len(url))
+        return result(ComponentStringA(p.scheme, url), 
+                      ComponentStringA(p.username, url),
+                      ComponentStringA(p.password, url), 
+                      ComponentStringA(p.host, url),
+                      ComponentStringA(p.port, url), 
+                      ComponentStringA(p.path, url),
+                      ComponentStringA(p.query, url), 
+                      ComponentStringA(p.ref, url))
 
 
 cdef class URL:
-    cdef GURL * _thisptr
+    cdef GURL* _thisptr
 
-    def __cinit__(self, url):
-        self._thisptr = new GURL(url)
+    def __cinit__(self, rl):
+        self._thisptr = new GURL(rl)
 
     def __dealloc__(self):
         if self._thisptr != NULL:
@@ -103,29 +124,28 @@ cdef class URL:
 
     cpdef string ref(self):
         return self._thisptr.ref()
-    
+
     def getAll(self):
-        return result(self.scheme(), self.username(), self.password(), 
-                      self.host(), self.port(), self.path(), self.query(), 
-                      self.ref())
+        return result(self.scheme(), self.username(), self.password(), self.host(), 
+                      self.port(), self.path(), self.query(), self.ref())
 
     cdef Parsed getParsed(self):
         return self._thisptr.parsed_for_possibly_invalid_spec()
+    
+    '''TODO
+    cpdef ReplaceComponents(self, scheme=None, username=None):
+        cdef Replacements[char] replacement
+        cdef Parsed p = self.getParsed()
+        cdef Component schemeComp
+        cdef Component usernameComp
+        if scheme:
+            schemeComp.len = len(scheme)
+            schemeComp.begin = 0
+            replacement.SetScheme(scheme, schemeComp)
+         if username:
+                usernameComp.len = len(username)
+                usernameComp.begin =
+                replacement.SetUsername(username, usernameComp)
 
-    '''Work in progress
-        cpdef ReplaceComponents(self, scheme = None, username = None):
-                cdef Replacements[char] replacement
-                cdef Parsed p = self.getParsed()
-                cdef Component schemeComp
-                cdef Component usernameComp
-                if scheme:
-                        schemeComp.len = len(scheme)
-                        schemeComp.begin = 0
-                        replacement.SetScheme(scheme, schemeComp)
-                if username:
-                        usernameComp.len = len(username)
-                        usernameComp.begin =  
-                        replacement.SetUsername(username, usernameComp)
-
-                return URL((self._thisptr.ReplaceComponents(replacement)).spec())
-        '''
+        return URL((self._thisptr.ReplaceComponents(replacement)).spec())
+    '''

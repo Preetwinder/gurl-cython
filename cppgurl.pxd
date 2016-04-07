@@ -1,7 +1,9 @@
 from libcpp.string cimport string
 from libcpp cimport bool
+from libcpp.vector cimport vector
 from cppurl_parse cimport Component, Parsed
 from cppurl_canon cimport Replacements
+
 
 cdef extern from "url/gurl.h":
     cdef cppclass GURL:
@@ -39,3 +41,7 @@ cdef extern from "url/gurl.h":
 
         Parsed parsed_for_possibly_invalid_spec()
         GURL ReplaceComponents(const Replacements[char] replacements)
+
+
+cdef extern from "batched.h":
+    cdef vector[GURL] BatchedParse(char **url, int len)
