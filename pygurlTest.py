@@ -9,7 +9,7 @@ def parts(list, size):
     return [list[i:i + x] for i in xrange(0, len(list), x)]
 
 
-with open("/home/preetwinder/Documents/urltesting/urls", "r") as f:
+with open("urls", "r") as f:
     x = 0
     data = f.readlines()
     data = parts(data, 20)
